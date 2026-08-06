@@ -10,7 +10,7 @@ import { EarnedCaloriesSheet } from "@/components/EarnedCaloriesSheet";
 import { LastWeekSummarySheet } from "@/components/LastWeekSummarySheet";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { MealEntry } from "@/types/meal";
-import { caloriesToday, lastWeekSummary, localDateKey, mealsForToday, weeklyCalorieBalance } from "@/utils/calorieCalculations";
+import { caloriesToday, lastWeekSummary, localDateKey, mealsForToday, mealsForYesterday, weeklyCalorieBalance } from "@/utils/calorieCalculations";
 import { compressImage } from "@/utils/imageCompression";
 import { createId } from "@/utils/createId";
 import { removeHistoricalPhotos } from "@/utils/mealStorage";
@@ -38,6 +38,7 @@ export default function Home() {
   const uploadRef = useRef<HTMLInputElement>(null);
   const oldPhotosCleaned = useRef(false);
   const today = useMemo(() => mealsForToday(meals).sort((a, b) => +new Date(b.eatenAt) - +new Date(a.eatenAt)), [meals]);
+  const yesterday = useMemo(() => mealsForYesterday(meals).sort((a, b) => +new Date(b.eatenAt) - +new Date(a.eatenAt)), [meals]);
   const todayKey = localDateKey();
   const earnedToday = earnedByDate[todayKey] ?? 0;
   const previousWeek = useMemo(() => {
@@ -133,7 +134,7 @@ export default function Home() {
         <button type="button" onClick={() => fileRef.current?.click()} className="flex h-12 items-center justify-center gap-2 rounded bg-black px-3 text-sm font-medium text-white hover:bg-black/80"><Camera size={19} strokeWidth={1.8} /> Take Photo</button>
         <button type="button" onClick={() => uploadRef.current?.click()} className="flex h-12 items-center justify-center gap-2 rounded border border-black/20 bg-white px-3 text-sm font-medium hover:bg-black/[.03]"><ImageUp size={19} strokeWidth={1.8} /> Upload Photo</button>
       </section>
-      <section className="flex min-h-0 flex-1 flex-col"><div className="mb-1 flex shrink-0 items-end justify-between"><div><p className="text-[10px] uppercase tracking-[.16em] text-black/40">Today</p><h2 className="text-xl font-semibold tracking-tight">Your meals</h2></div><span className="text-xs text-black/45">{today.length} {today.length === 1 ? "meal" : "meals"}</span></div><div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{mealsReady ? <MealList meals={today} onEdit={editMeal} onDelete={deleteMeal} onPreview={setPreview} /> : <div className="h-32 animate-pulse bg-black/5" />}</div></section>
+      <section className="flex min-h-0 flex-1 flex-col"><div className="mb-1 flex shrink-0 items-end justify-between"><div><p className="text-[10px] uppercase tracking-[.16em] text-black/40">Today</p><h2 className="text-xl font-semibold tracking-tight">Your meals</h2></div><span className="text-xs text-black/45">{today.length} {today.length === 1 ? "meal" : "meals"}</span></div><div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{mealsReady ? <><MealList meals={today} onEdit={editMeal} onDelete={deleteMeal} onPreview={setPreview} /><div className="mb-1 mt-5 flex items-end justify-between border-t border-black/10 pt-4"><h3 className="text-sm font-semibold uppercase tracking-[.12em] text-black/55">Yesterday</h3><span className="text-xs text-black/45">{yesterday.length} {yesterday.length === 1 ? "meal" : "meals"}</span></div>{yesterday.length ? <MealList meals={yesterday} onEdit={editMeal} onDelete={deleteMeal} onPreview={setPreview} /> : <p className="py-6 text-center text-sm text-black/40">No meals logged yesterday.</p>}</> : <div className="h-32 animate-pulse bg-black/5" />}</div></section>
       <div className="safe-bottom shrink-0 border-t border-black/10 bg-white pt-1"><button type="button" onClick={() => setLastWeekOpen(true)} className="flex h-12 w-full items-center justify-between text-sm font-medium"><span>Last Week Summary</span><span className={previousWeek.balance > 0 ? "text-green-600" : previousWeek.balance < 0 ? "text-red-600" : ""}>{previousWeek.balance > 0 ? "+" : ""}{previousWeek.balance.toLocaleString()}</span></button></div>
     </div>
     <MealFormSheet open={mealOpen} initial={draft} editing={!!editingId} onClose={() => setMealOpen(false)} onSave={saveMeal} />

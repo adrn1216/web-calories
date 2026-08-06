@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { lastWeekSummary, weeklyCalorieBalance } from "./calorieCalculations";
+import { lastWeekSummary, mealsForYesterday, weeklyCalorieBalance } from "./calorieCalculations";
 import { MealEntry } from "@/types/meal";
 
 const meal = (calories: number, eatenAt: string): MealEntry => ({ id: eatenAt, imageDataUrl: "data:image/jpeg;base64,x", description: "Meal", calories, eatenAt, createdAt: eatenAt });
+
+describe("mealsForYesterday", () => {
+  it("returns only meals from the previous local calendar day", () => {
+    const now = new Date(2026, 6, 22, 12);
+    const yesterday = meal(500, new Date(2026, 6, 21, 20).toISOString());
+    const today = meal(600, new Date(2026, 6, 22, 8).toISOString());
+    const older = meal(700, new Date(2026, 6, 20, 23).toISOString());
+
+    expect(mealsForYesterday([today, yesterday, older], now)).toEqual([yesterday]);
+  });
+});
 
 describe("weeklyCalorieBalance", () => {
   it("uses Monday as day one and returns saved calories", () => {

@@ -16,6 +16,12 @@ export function mealsForToday(meals: MealEntry[], now = new Date()) {
   return meals.filter((meal) => sameLocalDay(meal.eatenAt, now));
 }
 
+export function mealsForYesterday(meals: MealEntry[], now = new Date()) {
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  yesterday.setDate(yesterday.getDate() - 1);
+  return meals.filter((meal) => sameLocalDay(meal.eatenAt, yesterday));
+}
+
 export function caloriesToday(meals: MealEntry[], now = new Date()) {
   return mealsForToday(meals, now).reduce((sum, meal) => sum + meal.calories, 0);
 }

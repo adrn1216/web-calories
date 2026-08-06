@@ -23,6 +23,24 @@ describe("Home meal persistence", () => {
     expect(await screen.findByText("625 cal")).toBeInTheDocument();
   });
 
+  it("shows yesterday's meal logs below today's meals", async () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const previousMeal: MealEntry = {
+      ...storedMeal,
+      id: "yesterday-id",
+      description: "Yesterday meal",
+      eatenAt: yesterday.toISOString(),
+      createdAt: yesterday.toISOString(),
+    };
+    localStorage.setItem("calorie-tracker-meals", JSON.stringify([storedMeal, previousMeal]));
+
+    render(<Home />);
+
+    expect(await screen.findByText("Yesterday meal")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Yesterday" })).toBeInTheDocument();
+  });
+
   it("updates settings and deletes a meal", async () => {
     const user = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(true);
