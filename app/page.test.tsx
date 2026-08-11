@@ -83,4 +83,21 @@ describe("Home meal persistence", () => {
     const weights = JSON.parse(localStorage.getItem("calorie-tracker-weekly-weight")!);
     expect(Object.values(weights)).toContain(72.5);
   });
+
+  it("shows the saved weekly weight progression", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("calorie-tracker-weekly-weight", JSON.stringify({
+      "2026-07-20": 73.2,
+      "2026-07-27": 72.5,
+      "2026-08-03": 71.9,
+    }));
+    render(<Home />);
+    await screen.findByText("Test meal");
+    await user.click(screen.getByRole("button", { name: /Last Week Summary/i }));
+
+    expect(screen.getByRole("region", { name: "Overall weight trend" })).toBeInTheDocument();
+    expect(screen.getByText("3 weekly check-ins")).toBeInTheDocument();
+    expect(screen.getByText("-1.3 kg")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Weight changed from 73.2 to 71.9 kilograms" })).toBeInTheDocument();
+  });
 });
